@@ -1,0 +1,13 @@
+{
+    "name": "mokuyu/socket",
+    "description": "test",
+    "authors": [
+        {
+            "name": "kelicom",
+            "email": "kelicom@qq.com"
+        }
+    ],
+    "require": {
+        "workerman/phpsocket.io-for-win": "^1.1"
+    }
+}
