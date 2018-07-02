@@ -13,13 +13,15 @@ $io->on('connection', function ($socket) {
     // when the client emits 'new message', this listens and executes
     $socket->on('new message', function ($data) use ($socket) {
         echo $data . "\n";
-        // we tell the client to execute 'new message'
+        // 广播给除啦自己的所有客户端
         $socket->broadcast->emit('new message', array(
             'username' => $socket->username,
             'message'  => $data,
         ));
+        //系统回复一个消息
         $socket->emit('typing', array(
-            'username' => $socket->username,
+            'username' => 'System',
+            'message'  => '上条消息发送时间:' . date('Y-m-d H:i:s'),
         ));
     });
 
