@@ -1,1 +1,1 @@
-php start.php start -d
+php server.php start -d
