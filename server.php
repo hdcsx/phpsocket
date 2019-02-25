@@ -24,7 +24,12 @@ $io->on('workerStart', function () use ($io) {
 });
 
 $io->on('connection', function ($socket) {
-
+    $param = $socket->handshake['query'];
+    if (!isset($param['token'])) {
+        $socket->disconnect();
+        return;
+    }
+    // $headers = $socket->handshake['headers'];
     echo "new connection coming..." . $socket->conn->remoteAddress . "\n";
     $socket->addedUser = false;
 
