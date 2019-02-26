@@ -9,21 +9,21 @@ $io = new SocketIO(2020);
 // phpsocket.io提供了workerStart事件回调，也就是当进程启动后准备好接受客户端链接时触发的回调。 一个进程生命周期只会触发一次。可以在这里设置一些全局的事情，比如开一个新的Worker端口等等。
 // 监听一个http端口，通过http协议访问这个端口可以向所有客户端推送数据(url类似http://ip:9191?msg=xxxx)
 $io->on('workerStart', function () use ($io) {
-    $inner_http_worker            = new Worker('http://0.0.0.0:9191');
-    $inner_http_worker->onMessage = function ($http_connection, $data) use ($io) {
+    $web            = new Worker('http://0.0.0.0:9191');
+    $web->onMessage = function ($conn, $data) use ($io) {
         if (!isset($_GET['msg'])) {
-            return $http_connection->send('fail, $_GET["msg"] not found');
+            return $conn->send('fail, $_GET["msg"] not found');
         }
         $io->emit('new message', array(
             'username' => 'httppush',
             'message'  => $_GET['msg'],
         ));;
-        $http_connection->send('httppush ok');
+        $conn->send('httppush ok');
     };
-    $inner_http_worker->listen();
+    $web->listen();
 });
 
-$io->on('connection', function ($socket) {
+$io->on('connection', function ($socket) use ($io) {
     $param = $socket->handshake['query'];
     if (!isset($param['token'])) {
         $socket->disconnect();
