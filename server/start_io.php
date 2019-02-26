@@ -1,16 +1,16 @@
 <?php
 use PHPSocketIO\SocketIO;
+use Workerman\Lib\Timer;
 use Workerman\Worker;
 
-// composer autoload
-require_once __DIR__ . '/vendor/autoload.php';
-
+include dirname(__DIR__) . '/vendor/autoload.php';
 $io = new SocketIO(2020);
-// phpsocket.io提供了workerStart事件回调，也就是当进程启动后准备好接受客户端链接时触发的回调。 一个进程生命周期只会触发一次。可以在这里设置一些全局的事情，比如开一个新的Worker端口等等。
-// 监听一个http端口，通过http协议访问这个端口可以向所有客户端推送数据(url类似http://ip:9191?msg=xxxx)
-$io->on('workerStart', function () use ($io) {
+
+$io->on('workerStart', function () {
     $web            = new Worker('http://0.0.0.0:9191');
-    $web->onMessage = function ($conn, $data) use ($io) {
+    $web->onMessage = function ($conn, $data) {
+        global $io;
+        $_POST = $_POST ? $_POST : $_GET;
         if (!isset($_GET['msg'])) {
             return $conn->send('fail, $_GET["msg"] not found');
         }
@@ -21,9 +21,15 @@ $io->on('workerStart', function () use ($io) {
         $conn->send('httppush ok');
     };
     $web->listen();
+    // 一个定时器，第一个参数单位为秒
+    Timer::add(1, function () {
+        global $io;
+
+    });
 });
 
-$io->on('connection', function ($socket) use ($io) {
+$io->on('connection', function ($socket) {
+    global $io;
     $param = $socket->handshake['query'];
     if (!isset($param['token'])) {
         $socket->disconnect();
